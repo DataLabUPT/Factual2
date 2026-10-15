@@ -1,0 +1,13 @@
+scheme,protocol,majority_macrof1,identity_macrof1,test_speakers_seen_in_train,test_speakers_total
+5c,random,0.1072,0.3155,91,110
+5c,temporal,0.1343,0.2919,50,80
+5c,speaker,0.1124,0.1124,0,23
+3c,random,0.1929,0.5233,91,110
+3c,temporal,0.1809,0.4021,50,80
+3c,speaker,0.2049,0.1658,0,23
+2p,random,0.3347,0.7320,77,96
+2p,temporal,0.3349,0.6999,39,65
+2p,speaker,0.3641,0.2994,0,22
+2c,random,0.3757,0.6488,63,76
+2c,temporal,0.3913,0.7836,35,59
+2c,speaker,0.3933,0.3933,0,19

@@ -1,0 +1,6 @@
+# Dependencies of the released pipeline, pinned at the versions the
+# reference results were produced with. Standard library otherwise.
+
+numpy==2.4.3
+scikit-learn==1.9.0
+scipy==1.18.0

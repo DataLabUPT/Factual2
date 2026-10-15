@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use Factual2, please cite it as below."
+title: "Factual2: Extending a Romanian Fact-Checking Corpus with Speaker Credibility Histories for Leak-Aware Veracity Classification"
+authors:
+  - family-names: Bucos
+    given-names: Marian
+    orcid: "https://orcid.org/0000-0001-8205-6697"
+  - family-names: "Drăgulescu"
+    given-names: Bogdan
+    orcid: "https://orcid.org/0000-0002-1285-202X"
+version: "1.0.0"
+date-released: "2026-10-15"
+license: "Apache-2.0"
+repository-code: "https://github.com/DataLabUPT/Factual2"
+references:
+  - type: article
+    title: "Factual2: Extending a Romanian Fact-Checking Corpus with Speaker Credibility Histories for Leak-Aware Veracity Classification"
+    authors:
+      - family-names: Bucos
+        given-names: Marian
+      - family-names: "Drăgulescu"
+        given-names: Bogdan
+    journal: "Electronics"
+    year: 2026
+    notes: "The dataset paper (manuscript in preparation for MDPI Electronics; update volume/pages/DOI on publication)."
+  - type: article
+    title: "Data Leakage in Speaker Credibility Features: A Systematic Analysis and Correction for the LIAR2 Fake News Benchmark"
+    authors:
+      - family-names: Bucos
+        given-names: Marian
+    journal: "IEEE Access"
+    volume: 14
+    start: 136038
+    end: 136052
+    year: 2026
+    doi: "10.1109/ACCESS.2026.3730178"
+    notes: "Methodological basis for the leak-free credibility constructions."
