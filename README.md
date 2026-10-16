@@ -105,12 +105,17 @@ pip install -r requirements.txt
 python src/rehydrate.py --source <your factual.ro extraction>.csv
 python src/build_dataset.py        # data/splits/
 python src/validate_dataset.py     # release-gating integrity + leak-freeness checks
-python src/ablation.py             # TF-IDF + LogisticRegression grid -> results/results.csv
+python src/ablation.py --cred-cols full,total,individual --context both --seeds 42
+                                   # the released 744-run TF-IDF grid -> results/results.csv
 python src/baselines.py            # majority + speaker-identity floors
 ```
 
-Every stage is pure CPU and deterministic given the seed. `results/` already contains the
-outputs reported in the paper, so the tables can be checked without re-running anything.
+Every stage is pure CPU and deterministic given the split seed. Note that `ablation.py
+--seeds` is the *model* seed, which the `lbfgs` solver ignores, so one value reproduces the
+released numbers exactly; `results/results_splitseeds.csv` is the same grid re-run on five
+regenerated partitions (`build_dataset.py --seed k` for k in 7, 13, 42, 77, 123), while the
+released splits are seed 42. `results/` already contains the outputs reported in the paper,
+so the tables can be checked without re-running anything.
 
 ## Layout
 
