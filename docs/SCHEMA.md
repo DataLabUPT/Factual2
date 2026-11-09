@@ -50,6 +50,29 @@ assignments, labels and dates only — it does not import `credibility.py`) over
 scheme × protocol × construction combinations and asserts LFA leak-freeness. It exits
 non-zero on failure and gates the release.
 
+## Results files: `results/`
+
+Each table of the paper is read from one of these files. All are plain CSV with a header
+row, all are regenerable with the commands in the README, and none of them contains
+statement text.
+
+| File | Produced by | Contents |
+|---|---|---|
+| `results.csv` | `ablation.py` | The reference grid: one row per scheme x protocol x construction x feature group x `cred_cols` x `context`, with validation and test accuracy and macro-F1. |
+| `results_splitseeds.csv` | `build_dataset.py --seed k` then `ablation.py` | The same grid re-run on five regenerated partitions (k = 7, 13, 42, 77, 123) and aggregated, which is where the error bars come from: the model seed is inert for this pipeline, only the split seed moves the numbers. |
+| `baselines.csv` | `baselines.py` | Per scheme x protocol: the majority-class floor, the speaker-identity model, the zero-feature control, and a label-permutation null over 200 draws (mean, SD and 95th percentile). |
+| `baselines_combined.csv` | `baselines.py --combined` | Seven feature groups per split seed, from `identity` and `lfa` alone to `text+identity+lfa`, which decomposes how much the honest history adds on top of speaker identity. |
+| `cred_repr.csv` | `ablation.py --cred-repr` | The same histories re-encoded as raw counts, class proportions, and proportions or counts plus log(1 + total), with the feature count of each encoding. |
+| `perclass.csv` | `perclass_strata.py` | Precision, recall, F1 and test support for every class of a scheme, per split seed, so the variability of the rare verdicts stays visible. |
+| `strata.csv` | `perclass_strata.py` | The reference classifier scored on test rows grouped by admissible history length (empty, 1-4, >= 5 past verdicts), next to the train-majority predictor on the same rows. |
+| `model_families.csv` | `model_families.py` | The counts-only PSA-versus-LFA comparison repeated with seven classifiers of differing inductive bias, per scheme x protocol x split seed, with the per-run gap. |
+
+The `context` column of `results.csv` is an ablation axis (the platform's claim-time context
+folded into the text features, on or off), not the context text itself.
+
+Transformer results are not part of this release: the encoder arm is not shipped, so its
+output file is not either. Everything above runs on CPU.
+
 ## Rehydration contract
 
 `src/rehydrate.py --source <extraction>.csv` joins on `declaration_link` and writes

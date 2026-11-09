@@ -1,0 +1,3 @@
+# The release is written with LF line endings and its checksums are taken over
+# those exact bytes, so git must not convert them in either direction.
+* -text

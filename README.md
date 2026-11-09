@@ -107,7 +107,11 @@ python src/build_dataset.py        # data/splits/
 python src/validate_dataset.py     # release-gating integrity + leak-freeness checks
 python src/ablation.py --cred-cols full,total,individual --context both --seeds 42
                                    # the released 744-run TF-IDF grid -> results/results.csv
-python src/baselines.py            # majority + speaker-identity floors
+python src/baselines.py            # majority, identity and permutation-null floors
+python src/baselines.py --combined # identity vs. honest history, fused with text
+python src/ablation.py --cred-repr # alternative encodings of the same histories
+python src/perclass_strata.py      # per-class metrics and history-length strata
+python src/model_families.py       # the PSA-LFA gap across seven classifier families
 ```
 
 Every stage is pure CPU and deterministic given the split seed. Note that `ablation.py
@@ -123,11 +127,11 @@ so the tables can be checked without re-running anything.
 data/
   factual2_metadata.csv       base corpus, text columns removed
   splits/<scheme>/<protocol>/<construction>/{train,val,test}.csv
-results/               experiment outputs reported in the paper
+results/               experiment outputs reported in the paper, one file per table family
 src/                   preprocess · segment · schemes · credibility · build_dataset
-                       validate_dataset · ablation · baselines
-                       rehydrate (restores the texts)
-docs/SCHEMA.md         column dictionary, rehydration contract, provenance
+                       validate_dataset · ablation · baselines · perclass_strata
+                       model_families · rehydrate (restores the texts)
+docs/SCHEMA.md         column dictionary, results dictionary, rehydration contract
 CHECKSUMS.sha256       sha256 of every released file
 ```
 

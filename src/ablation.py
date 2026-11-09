@@ -14,6 +14,17 @@ Ablation axes (A5, the encoder arm, is outside this release):
                            (--cred-cols full,total,individual)
   A6 context field : --context off|on|both — whether the `context` text is folded into
                      the text features (--with-context is an alias for on)
+With --cred-repr, the runner instead sweeps the *representation* of the credibility
+vector: the released counts against length-invariant
+alternatives, to test whether the LFA/LFA-temporal gap under the temporal protocol is an
+artifact of feature scale rather than the price of causal admissibility. The released
+split files are untouched -- the transform is applied after loading, so no new leakage
+surface is created. Modes: counts (released: per-class buckets + total_counts),
+proportions (buckets divided by the total, zero vector preserved for cold start),
+proportions+loglen (proportions plus log(1+total) as an explicit history-length channel),
+counts+loglen (raw buckets plus log(1+total)). Output goes to results/cred_repr.csv, so
+results/results.csv keeps its released schema.
+
 Results are averaged over training seeds (--seeds) and written to
 results/results.csv, with a printed summary of the headline comparison.
 
@@ -59,7 +70,27 @@ def _text(rows, with_context):
     return [r["content"] for r in rows]
 
 
-def _features(parts, cred_cols, group, with_context, seed):
+CRED_REPRS = ("counts", "proportions", "proportions+loglen", "counts+loglen")
+
+
+def _cred_matrix(rows, cred_cols, repr_mode):
+    """Dense credibility block under one representation; cold-start rows stay all-zero."""
+    class_cols = [c for c in cred_cols if c != "total_counts"]
+    raw = np.array([[float(r[c]) for c in class_cols] for r in rows])
+    tot = raw.sum(axis=1, keepdims=True)
+    if repr_mode == "counts":
+        return np.hstack([raw, tot])
+    nz = np.where(tot > 0, tot, 1.0)
+    if repr_mode == "proportions":
+        return raw / nz
+    if repr_mode == "proportions+loglen":
+        return np.hstack([raw / nz, np.log1p(tot)])
+    if repr_mode == "counts+loglen":
+        return np.hstack([raw, np.log1p(tot)])
+    raise SystemExit("unknown --cred-repr mode: %r" % (repr_mode,))
+
+
+def _features(parts, cred_cols, group, with_context, seed, cred_repr="counts"):
     """Builds train/val/test feature matrices for a feature group."""
     tr, va, te = parts["train"], parts["val"], parts["test"]
     blocks = {"train": [], "val": [], "test": []}
@@ -70,18 +101,22 @@ def _features(parts, cred_cols, group, with_context, seed):
         blocks["test"].append(vec.transform(_text(te, with_context)))
     if "credibility" in group:
         scaler = StandardScaler()
-        Xtr = scaler.fit_transform(np.array([[float(r[c]) for c in cred_cols] for r in tr]))
-        blocks["train"].append(csr_matrix(Xtr))
+
+        def dense(rows):
+            if cred_repr == "counts":
+                return np.array([[float(r[c]) for c in cred_cols] for r in rows])
+            return _cred_matrix(rows, cred_cols, cred_repr)
+
+        blocks["train"].append(csr_matrix(scaler.fit_transform(dense(tr))))
         for part in ("val", "test"):
-            X = scaler.transform(np.array([[float(r[c]) for c in cred_cols] for r in parts[part]]))
-            blocks[part].append(csr_matrix(X))
+            blocks[part].append(csr_matrix(scaler.transform(dense(parts[part]))))
     X = {p: hstack(b).tocsr() for p, b in blocks.items()}
     y = {p: np.array([int(r["label"]) for r in parts[p]]) for p in ("train", "val", "test")}
     return X, y
 
 
-def run_one(parts, cred_cols, group, with_context, seed):
-    X, y = _features(parts, cred_cols, group, with_context, seed)
+def run_one(parts, cred_cols, group, with_context, seed, cred_repr="counts"):
+    X, y = _features(parts, cred_cols, group, with_context, seed, cred_repr)
     clf = LogisticRegression(max_iter=2000, C=1.0, class_weight="balanced", random_state=seed)
     clf.fit(X["train"], y["train"])
     out = {}
@@ -178,5 +213,45 @@ def main():
     print(f"\n{len(results)} runs -> {out_path}")
 
 
+def main_cred_repr():
+    """X4: representation sweep of the credibility vector (counts-only groups)."""
+    schemes = _arg("--schemes", "5c,3c,2p,2c").split(",")
+    protocols = _arg("--protocols", "temporal,random,speaker").split(",")
+    constructions = _arg("--constructions", "lfa,lfa_temporal").split(",")
+    reprs = _arg("--cred-repr", ",".join(CRED_REPRS)).split(",")
+    seeds = [int(x) for x in _arg("--seeds", "42").split(",")]
+    seed42 = _arg("--seed", "42")
+
+    rows = []
+    for scheme in schemes:
+        for protocol in protocols:
+            tag = protocol if protocol == "temporal" else "%s_seed%s" % (protocol, seed42)
+            for construction in constructions:
+                parts, cred_cols = load(scheme, tag, construction)
+                line = []
+                for rep in reprs:
+                    per_seed = [run_one(parts, cred_cols, ("credibility",), False, s, rep)
+                                for s in seeds]
+                    vals = np.array([r["test_macrof1"] for r in per_seed])
+                    k = _cred_matrix(parts["train"][:1], cred_cols, rep).shape[1]
+                    rows.append({"scheme": scheme, "protocol": protocol,
+                                 "construction": construction, "cred_repr": rep,
+                                 "n_features": k,
+                                 "test_macrof1": "%.4f" % vals.mean(),
+                                 "test_macrof1_std": "%.4f" % vals.std()})
+                    line.append("%s=%.3f" % (rep, vals.mean()))
+                print("%-3s %-9s %-13s " % (scheme, protocol, construction) + "  ".join(line))
+
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+    out_path = os.path.join(RESULTS_DIR, "cred_repr.csv")
+    fields = ["scheme", "protocol", "construction", "cred_repr", "n_features",
+              "test_macrof1", "test_macrof1_std"]
+    with open(out_path, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        w.writerows(rows)
+    print("\n%d runs -> %s" % (len(rows), out_path))
+
+
 if __name__ == "__main__":
-    main()
+    main_cred_repr() if "--cred-repr" in sys.argv else main()
