@@ -137,11 +137,12 @@ CHECKSUMS.sha256       sha256 of every released file
 
 ## Citation
 
-If you use Factual2, please cite the dataset paper — Bucos & Drăgulescu, *"Factual2:
-Extending a Romanian Fact-Checking Corpus with Speaker Credibility Histories for
-Leak-Aware Veracity Classification"* — and the credibility-leakage methodology it builds
-on (Bucos, *"Data Leakage in Speaker Credibility Features"*, IEEE Access, 2026). See
-`CITATION.cff`.
+If you use Factual2, please cite the dataset paper — Bucos, M.; Drăgulescu, B.
+*"Factual2: Extending a Romanian Fact-Checking Corpus with Speaker Credibility Histories
+for Leak-Aware Veracity Classification"*, *Electronics* **2026**, *15*(22), 5248,
+<https://doi.org/10.3390/electronics15225248> — and the credibility-leakage methodology it
+builds on (Bucos, *"Data Leakage in Speaker Credibility Features"*, IEEE Access, 2026).
+See `CITATION.cff`.
 
 ```bibtex
 @article{bucos2026factual2,
@@ -149,8 +150,11 @@ on (Bucos, *"Data Leakage in Speaker Credibility Features"*, IEEE Access, 2026).
   title   = {Factual2: Extending a Romanian Fact-Checking Corpus with Speaker
              Credibility Histories for Leak-Aware Veracity Classification},
   journal = {Electronics},
+  volume  = {15},
+  number  = {22},
+  pages   = {5248},
   year    = {2026},
-  note    = {Manuscript in preparation}
+  doi     = {10.3390/electronics15225248}
 }
 
 @article{bucos_liar2_credibility_leakage,

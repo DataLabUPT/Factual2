@@ -21,8 +21,14 @@ references:
       - family-names: "Drăgulescu"
         given-names: Bogdan
     journal: "Electronics"
+    volume: 15
+    issue: 22
+    start: 5248
+    end: 5248
     year: 2026
-    notes: "The dataset paper (manuscript in preparation for MDPI Electronics; update volume/pages/DOI on publication)."
+    month: 11
+    doi: "10.3390/electronics15225248"
+    notes: "The dataset paper, published 12 November 2026 in MDPI Electronics 15(22), 5248."
   - type: article
     title: "Data Leakage in Speaker Credibility Features: A Systematic Analysis and Correction for the LIAR2 Fake News Benchmark"
     authors:
